@@ -15,6 +15,11 @@ pygame.display.set_caption("Jumpy")
 FPS = 60
 clock=pygame.time.Clock()
 
+
+# Game Variables
+GRAVITY = 1
+
+
 # Define colours
 WHITE = (255,255,255)
 
@@ -32,6 +37,7 @@ class Player():
         self.rect = pygame.Rect(0,0,self.width, self.height)
         self.rect.center = (x,y)
         self.flip = False
+        self.vel_y=0
     
     def move(self):
         dx=0
@@ -44,11 +50,19 @@ class Player():
             self.flip=False
             dx+=10
 
+        # Gravity
+        self.vel_y += GRAVITY
+        dy+=self.vel_y
+
         if self.rect.left + dx < 0:
             dx = -self.rect.left
 
         if self.rect.right + dx > SCREEN_WIDTH:
             dx = SCREEN_WIDTH - self.rect.right
+
+        if self.rect.bottom + dy > SCREEN_HEIGHT:
+            dy=0
+            self.vel_y = -20
             
         self.rect.x+=dx
         self.rect.y+=dy

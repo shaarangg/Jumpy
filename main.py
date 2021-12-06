@@ -18,6 +18,9 @@ clock=pygame.time.Clock()
 # Game Variables
 GRAVITY = 1
 MAX_PLATFORMS = 10
+SCROLL_THRESH=200
+scroll=0
+bg_scroll=0
 
 # Define colours
 WHITE = (255,255,255)
@@ -27,6 +30,11 @@ bg_image = pygame.image.load('assets/bg.png').convert_alpha()
 player_image = pygame.image.load('assets/jump.png').convert_alpha()
 platform_image = pygame.image.load('assets/wood.png').convert_alpha()
 
+
+
+def draw_bg(bg_scroll):
+        screen.blit(bg_image,(0,bg_scroll))
+        screen.blit(bg_image,(0,-600 + bg_scroll))
 
 # Player class
 class Player():
@@ -38,8 +46,9 @@ class Player():
         self.rect.center = (x,y)
         self.flip = False
         self.vel_y=0
-    
+
     def move(self):
+        scroll=0
         dx=0
         dy=0
         key = pygame.key.get_pressed()
@@ -72,14 +81,18 @@ class Player():
                     dy=0
                     self.vel_y = -20
         # Collissions with ground
-        
+
         if self.rect.bottom + dy > SCREEN_HEIGHT:
             dy=0
             self.vel_y = -20
         
+        if(self.rect.top<=SCROLL_THRESH):
+            if(self.vel_y < 0):
+                scroll = -dy
 
         self.rect.x+=dx
         self.rect.y+=dy
+        return scroll
 
 
     def draw(self):
@@ -94,6 +107,9 @@ class Platform(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+
+    def update(self, scroll):
+        self.rect.y +=scroll
 
 
 # Player instance
@@ -112,12 +128,17 @@ for p in range(MAX_PLATFORMS):
 
 run =True
 while run:
-    screen.blit(bg_image,(0,0))
     clock.tick(FPS)
+    scroll=jumpy.move()
+    bg_scroll+=scroll
+
+    if(bg_scroll>=600):
+        bg_scroll=0
+    draw_bg(bg_scroll)
 
     platform_group.draw(screen)
-
-    jumpy.move()
+    pygame.draw.line(screen,WHITE, (0,SCROLL_THRESH), (SCREEN_WIDTH,SCROLL_THRESH))
+    platform_group.update(scroll)
     jumpy.draw()
 
     # Event Handler

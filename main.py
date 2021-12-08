@@ -120,14 +120,28 @@ class Player():
 
 
 class Platform(pygame.sprite.Sprite):
-    def __init__(self,width,x,y):
+    def __init__(self,width,x,y, moving):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.transform.scale(platform_image, (width,10))
         self.rect = self.image.get_rect()
+        self.moving = moving
+        self.speed = random.randint(1,2)
+        self.move_counter = random.randint(0,50)
+        self.direction = random.choice([-1,1])
         self.rect.x = x
         self.rect.y = y
 
     def update(self, scroll):
+
+        if(self.moving):
+            self.move_counter+=1
+            self.rect.x += self.direction * self.speed
+
+        if self.move_counter > 100 or self.rect.left<0 or self.rect.right>SCREEN_WIDTH:
+            self.direction *=-1
+            self.move_counter=0
+
+
         self.rect.y +=scroll
         
         if(self.rect.top > SCREEN_HEIGHT):
@@ -144,7 +158,7 @@ jumpy = Player(SCREEN_WIDTH//2, SCREEN_HEIGHT - 150)
 
 # Platform
 platform_group = pygame.sprite.Group()
-platform = Platform(100, SCREEN_WIDTH//2 - 50,SCREEN_HEIGHT -90)
+platform = Platform(100, SCREEN_WIDTH//2 - 50,SCREEN_HEIGHT -90, False)
 platform_group.add(platform)
 
 
@@ -164,10 +178,14 @@ while run:
 
 
         if(len(platform_group)<10):
+            p_moving=False
             p_w = random.randint(40,60)
             p_x = random.randint(0,SCREEN_WIDTH-p_w)
             p_y = platform.rect.y - random.randint(80,120)
-            platform = Platform(p_w,p_x,p_y)
+            p_type = random.randint(1,2)
+            if p_type==1 and score>1000:
+                p_moving=True
+            platform = Platform(p_w,p_x,p_y,p_moving)
             platform_group.add(platform)
 
 
@@ -208,7 +226,7 @@ while run:
                 fade_counter=0
                 jumpy.rect.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT - 150)
                 platform_group.empty()
-                platform = Platform(100, SCREEN_WIDTH//2 - 50,SCREEN_HEIGHT -90)
+                platform = Platform(100, SCREEN_WIDTH//2 - 50,SCREEN_HEIGHT -90, False)
                 platform_group.add(platform)
 
 
